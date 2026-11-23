@@ -27,7 +27,7 @@ https://www.rfc-editor.org/rfc/rfc8174
 
 The staking precompile is at `0x0000000000000000000000000000000000001000`. The enrollment revision enables the three updated precompile methods below. Calls to a disabled selector follow the staking precompile's unsupported-method fallback. Each enabled selector has a fixed native gas charge. Transaction intrinsic and calldata charges apply separately.
 
-The reference implementation enables both enrollment and enforcement at `MONAD_NEXT`. Network rollout should give existing validators time to enroll before the first enforcing snapshot.
+The enrollment revision MUST activate before the enforcement revision. This interval gives existing validators time to enroll a receiver key before the first snapshot that requires one for selection. The reference implementation uses `MONAD_NEXT` for both gates during development.
 
 ### Replace `addValidator`
 
