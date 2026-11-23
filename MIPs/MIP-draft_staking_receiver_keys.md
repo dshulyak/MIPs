@@ -148,7 +148,9 @@ Binding the proof to the chain ID, consensus identity, and authorization address
 
 ## Backwards Compatibility
 
-Validators registered before enrollment keep their existing IDs, stake and consensus keys. They can add a receiver key using `addReceiverKey`. Registration clients must switch selectors, include the receiver key in the signed message and supply the receiver proof when the enrollment revision takes effect. Until a validator enrolls, it is ineligible for new sets selected under enforcement.
+Disabling the three-argument `addValidator` selector is a breaking ABI change. Calls to the legacy selector revert from the enrollment revision. Keeping it enabled would let operators register and stake a validator without a receiver key. Under enforcement, that validator would be ineligible for selection until a separate `addReceiverKey` transaction from its staking authorization address enrolled the key. Registration clients must switch to the new selector, include the receiver key in the message signed by both consensus keys, and supply the receiver proof.
+
+Validators registered before enrollment keep their existing IDs, stake and consensus keys. They can enroll with `addReceiverKey` and must do so before a snapshot under enforcement to be eligible for selection at that snapshot.
 
 Finalized reads of pre-enforcement state may yield an absent receiver key. Consensus clients map this absence to an optional field, so a validator file or event encoded before enrollment can still be read. A validator record with a receiver key appends it to the prior RLP structure. Every consumer of keyed records must upgrade before receiving them.
 
