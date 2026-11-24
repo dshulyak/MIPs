@@ -27,11 +27,13 @@ https://www.rfc-editor.org/rfc/rfc8174
 
 The staking precompile is at `0x0000000000000000000000000000000000001000`. Calls to a disabled selector follow the staking precompile's unsupported-method fallback. Each enabled selector has a fixed native gas charge. Transaction intrinsic and calldata charges apply separately.
 
-The enrollment revision, `MONAD_NEXT_ENROLLMENT`, enables the three precompile methods below. The enforcement revision, `MONAD_NEXT_DKG`, MUST activate later to give existing validators time to enroll a receiver key.
+The enrollment revision, `MONAD_NEXT_BVE_ENROLLMENT`, enables the three precompile methods below. The enforcement revision, `MONAD_NEXT_DKG`, MUST activate later to give existing validators time to enroll a receiver key.
 
 ### Add a receiver-key `addValidator` overload
 
-The enrollment revision enables `addValidator(bytes,bytes,bytes,(bytes,bytes32,bytes32))` (`0x3e4616bf`). The overload takes the registration message, the 64-byte consensus secp256k1 signature, the 96-byte consensus BLS signature, and the receiver proof. The original `addValidator(bytes,bytes,bytes)` selector (`0xf145204c`) retains its registration behavior.
+The enrollment revision enables `addValidator(bytes,bytes,bytes,(bytes,bytes32,bytes32))` (`0x3e4616bf`). The overload takes the registration message, the 64-byte consensus secp256k1 signature, the 96-byte consensus BLS signature, and the receiver proof.
+
+The original `addValidator(bytes,bytes,bytes)` selector (`0xf145204c`) can be disabled at either `MONAD_NEXT_BVE_ENROLLMENT` or `MONAD_NEXT_DKG`. This specification disables it at `MONAD_NEXT_BVE_ENROLLMENT` so new validators enroll their receiver key in the registration transaction. Only validators registered before enrollment need a separate `addReceiverKey` transaction.
 
 Validators MUST generate their DKG receiver key independently of their consensus signing keys. The 198-byte registration message inserts the 33-byte compressed receiver key after the BLS key.
 
@@ -148,9 +150,7 @@ Binding the proof to the chain ID, consensus identity, and authorization address
 
 ## Backwards Compatibility
 
-Operators using the three-argument `addValidator` can register and stake a validator without a receiver key. Once enforcement begins, the validator needs a separate `addReceiverKey` transaction from its staking authorization address before it can qualify at a snapshot.
-
-A network upgrade may retire the original selector when enrollment opens or in a later revision. Retirement is a breaking ABI change. Calls to the original selector revert once it is retired. Registration clients must switch to the overload, include the receiver key in the message signed by both consensus keys, and supply the receiver proof.
+Disabling the original selector is a breaking ABI change. Calls to it revert starting at `MONAD_NEXT_BVE_ENROLLMENT`. Registration clients must switch to the overload, include the receiver key in the message signed by both consensus keys, and supply the receiver proof.
 
 Validators registered before enrollment keep their existing IDs, stake and consensus keys. They can enroll with `addReceiverKey` and must do so before a snapshot under enforcement to be eligible for selection at that snapshot.
 
