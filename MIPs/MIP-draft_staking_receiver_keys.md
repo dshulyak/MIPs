@@ -29,9 +29,9 @@ The staking precompile is at `0x0000000000000000000000000000000000001000`. The e
 
 The enrollment revision MUST activate before the enforcement revision. This interval gives existing validators time to enroll a receiver key before the first snapshot that requires one for selection. The reference implementation uses `MONAD_NEXT` for both gates during development.
 
-### Replace `addValidator`
+### Add a receiver-key `addValidator` overload
 
-Before enrollment, use the legacy `addValidator(bytes,bytes,bytes)` selector (`0xf145204c`). At enrollment, replace it with `addValidator(bytes,bytes,bytes,(bytes,bytes32,bytes32))` (`0x3e4616bf`) and disable the legacy selector. The new call takes the registration message, the 64-byte consensus secp256k1 signature, the 96-byte consensus BLS signature, and the receiver proof.
+The enrollment revision enables `addValidator(bytes,bytes,bytes,(bytes,bytes32,bytes32))` (`0x3e4616bf`). The overload takes the registration message, the 64-byte consensus secp256k1 signature, the 96-byte consensus BLS signature, and the receiver proof. The original `addValidator(bytes,bytes,bytes)` selector (`0xf145204c`) retains its registration behavior.
 
 Validators MUST generate their DKG receiver key independently of their consensus signing keys. The 198-byte registration message inserts the 33-byte compressed receiver key after the BLS key.
 
@@ -82,7 +82,7 @@ The ownership slot key consists of namespace byte `0x0d`, the 20-byte Ethereum a
 
 #### Gas
 
-The legacy charge is 505,125 gas. It includes 352,125 gas for storage and events, a 3,000-gas allowance for consensus secp256k1 verification, and a 150,000-gas allowance for BLS verification. The replacement charges **587,925 gas**.
+The legacy charge is 505,125 gas. It includes 352,125 gas for storage and events, a 3,000-gas allowance for consensus secp256k1 verification, and a 150,000-gas allowance for BLS verification. The overload charges **587,925 gas**.
 
 | Work | Gas |
 | --- | ---: |
@@ -148,7 +148,9 @@ Binding the proof to the chain ID, consensus identity, and authorization address
 
 ## Backwards Compatibility
 
-Disabling the three-argument `addValidator` selector is a breaking ABI change. Calls to the legacy selector revert from the enrollment revision. Keeping it enabled would let operators register and stake a validator without a receiver key. Under enforcement, that validator would be ineligible for selection until a separate `addReceiverKey` transaction from its staking authorization address enrolled the key. Registration clients must switch to the new selector, include the receiver key in the message signed by both consensus keys, and supply the receiver proof.
+Operators using the three-argument `addValidator` can register and stake a validator without a receiver key. Once enforcement begins, the validator needs a separate `addReceiverKey` transaction from its staking authorization address before it can qualify at a snapshot.
+
+A network upgrade may retire the original selector when enrollment opens or in a later revision. Retirement is a breaking ABI change. Calls to the original selector revert once it is retired. Registration clients must switch to the overload, include the receiver key in the message signed by both consensus keys, and supply the receiver proof.
 
 Validators registered before enrollment keep their existing IDs, stake and consensus keys. They can enroll with `addReceiverKey` and must do so before a snapshot under enforcement to be eligible for selection at that snapshot.
 
