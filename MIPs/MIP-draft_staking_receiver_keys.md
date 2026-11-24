@@ -25,9 +25,9 @@ https://www.rfc-editor.org/rfc/rfc2119
 
 https://www.rfc-editor.org/rfc/rfc8174
 
-The staking precompile is at `0x0000000000000000000000000000000000001000`. The enrollment revision enables the three updated precompile methods below. Calls to a disabled selector follow the staking precompile's unsupported-method fallback. Each enabled selector has a fixed native gas charge. Transaction intrinsic and calldata charges apply separately.
+The staking precompile is at `0x0000000000000000000000000000000000001000`. Calls to a disabled selector follow the staking precompile's unsupported-method fallback. Each enabled selector has a fixed native gas charge. Transaction intrinsic and calldata charges apply separately.
 
-The enrollment revision MUST activate before the enforcement revision. This interval gives existing validators time to enroll a receiver key before the first snapshot that requires one for selection. The reference implementation uses `MONAD_NEXT` for both gates during development.
+The enrollment revision, `MONAD_NEXT_ENROLLMENT`, enables the three precompile methods below. The enforcement revision, `MONAD_NEXT_DKG`, MUST activate later to give existing validators time to enroll a receiver key.
 
 ### Add a receiver-key `addValidator` overload
 
@@ -128,7 +128,7 @@ The precompile charges **16,200 gas**, budgeting two cold storage reads at 8,100
 
 ### Require receiver keys at validator selection
 
-At the first `SNAPSHOT` under enforcement and every subsequent `SNAPSHOT`, first apply the existing validator status checks to each candidate. For a candidate that passes those checks, read the first receiver-key word and include the candidate only if its first byte is nonzero. Rank eligible candidates by descending stake, break ties by ascending validator ID, and apply the existing active-set limit.
+At the first `SNAPSHOT` under `MONAD_NEXT_DKG` and every subsequent `SNAPSHOT`, apply the existing validator status checks to each candidate. For a candidate that passes those checks, read the first receiver-key word and include the candidate only if its first byte is nonzero. Rank eligible candidates by descending stake, break ties by ascending validator ID, and apply the existing active-set limit.
 
 A validator excluded solely for a missing receiver key stays in the execution set and can qualify at a later snapshot. Enrollment after a snapshot cannot add a validator to the already selected set. During the epoch delay, the snapshot view supplies the current set and the consensus view supplies the selected next set.
 
