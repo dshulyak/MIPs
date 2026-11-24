@@ -42,7 +42,7 @@ consensusSecpKey[33] || consensusBlsKey[48] || receiverKey[33] ||
 authAddress[20] || stake[32 big-endian] || commission[32 big-endian]
 ```
 
-Both consensus signatures MUST cover the entire message using the existing validator-registration verification rules. Apply the existing stake, value, commission, and consensus-key checks. Verify the receiver proof and require an empty receiver-key ownership slot. On success, create the validator, make the initial delegation, and write the receiver key and its ownership entry atomically. Emit the existing validator-creation event and return the new `uint64` validator ID.
+Both consensus signatures MUST cover the entire message using the existing validator-registration verification rules. Apply the existing stake, value, commission, and consensus-key checks. Verify the receiver proof and require an empty receiver-key ownership slot. On success, create the validator, make the initial delegation, and write the receiver key and its ownership entry. Emit the existing validator-creation event and return the new `uint64` validator ID.
 
 #### Proof of possession
 
