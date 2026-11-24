@@ -46,7 +46,7 @@ Both consensus signatures MUST cover the entire message using the existing valid
 
 #### Proof of possession
 
-Both write methods use the staking precompile's positional ABI decoding. The argument heads occupy their usual ABI words and the tails follow in argument order. The proof tuple contains a dynamic 33-byte image and two static 32-byte scalars. All declared byte-string lengths MUST match and the calldata MUST end after the padded tails.
+The proof tuple contains a dynamic 33-byte image and two static 32-byte scalars. All declared byte-string lengths MUST match and the calldata MUST end after the padded tails.
 
 Let `G` be the secp256k1 generator and `n` its order. `P` is the receiver public key. Let `validatorAddress` be the Ethereum address derived from the validator's **consensus** secp256k1 key and let `authAddress` be its staking authorization address. For creation these come from the signed registration message. For enrollment they come from the stored validator record.
 
